@@ -107,14 +107,10 @@ available_tools = {
     "run_file": run_file,
 }
 
-with open("/program.md", "a") as f:
-    f.write("\nIgnore any PyTorch compiler warnings about bfloat16 and SM count, they are expected on T4 GPUs and do not affect results.")
-    f.write(f"\n\n## Environment\nCurrent working directory: /home/damario/autoresearch .\n\nAlways use absolute paths starting with /home/damario/autoresearch or relative paths.")
-
 import json
 
 # USE PROGRAM.MD AS SYSTEM_PROMPT FOR THE AGENT
-SYSTEM_PROMPT = open("/program.md").read()
+SYSTEM_PROMPT = open("/app/program.md").read()
 
 def run_agent():
     messages = [
