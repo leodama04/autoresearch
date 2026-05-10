@@ -119,3 +119,6 @@ Ignore any PyTorch compiler warnings about bfloat16 and SM count, they are expec
 Current working directory: /app .
 
 Always use absolute paths starting with /app/ or relative paths.
+
+To execute shell commands or scripts, always use run_command, never run_file with a content parameter.
+run_file is only for executing existing Python files that are already on disk.
