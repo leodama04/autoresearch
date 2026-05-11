@@ -96,7 +96,7 @@ class CausalSelfAttention(nn.Module):
             v_sdpa = v.transpose(1, 2)
             y = F.scaled_dot_product_attention(q_sdpa, k_sdpa, v_sdpa, is_causal=True)
             y = y.transpose(1, 2).contiguous().view(B, T, -1)
-        y = self.c_proj(y)  # fuori dall'if, sempre eseguito
+        y = self.c_proj(y)
         return y
 
 
