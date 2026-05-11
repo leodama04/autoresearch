@@ -112,7 +112,7 @@ import json
 # USE PROGRAM.MD AS SYSTEM_PROMPT FOR THE AGENT
 SYSTEM_PROMPT = open("/app/program.md").read()
 
-MAX_MESSAGES = 40  # tronca la storia per evitare context overflow
+MAX_MESSAGES = 40  # avoiding context overflow
 
 def run_agent():
     messages = [
@@ -121,7 +121,6 @@ def run_agent():
     
     while True:
         try:
-            # Tronca la storia mantenendo sempre il primo messaggio
             trimmed = messages[:1] + messages[-MAX_MESSAGES:] if len(messages) > MAX_MESSAGES else messages
             
             response = ollama.chat(
@@ -141,7 +140,6 @@ def run_agent():
             )
         except Exception as e:
             print(f"\n[ERROR] Ollama crash: {e}")
-            # Rimuovi gli ultimi messaggi che hanno causato il crash e riprova
             messages = messages[:-2] if len(messages) > 2 else messages
             continue
 
@@ -173,7 +171,7 @@ def run_agent():
             except Exception as e:
                 result = f"Error executing tool {name}: {e}"
             
-            result_truncated = result[:3000]  # tronca per evitare XML crash di Ollama
+            result_truncated = result[:3000]
             print(f"[RESULT] {result_truncated}")
             messages.append({
                 "role": "tool",
