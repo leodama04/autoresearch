@@ -122,8 +122,10 @@ Always use absolute paths starting with /app/ or relative paths.
 
 ## Tool usage rules
 
-- `run_command`: use this for ALL shell commands, bash scripts, and to run Python files via `uv run train.py`
-- `run_file`: use this ONLY to execute an existing Python file already on disk, with NO other arguments except `path`
-- `write_file`: use this to write or overwrite file contents to disk
-- NEVER call `run_file` with a `content` parameter — that is always wrong. Use `write_file` to write, then `run_command` to execute.
-- NEVER call any tool with arguments that are not in its schema.
+- `run_file(path)` — accepts ONLY `path`. No other arguments ever.
+- `write_file(path, content)` — to write content to a file.
+- `run_command(command)` — to run any shell command.
+
+WRONG: run_file(path="x.py", command="...")
+WRONG: run_file(path="x.py", content="...")
+RIGHT: write_file(path="x.py", content="...") then run_command(command="uv run x.py")

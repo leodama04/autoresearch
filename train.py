@@ -20,13 +20,7 @@ import torch.nn.functional as F
 from kernels import get_kernel
 cap = torch.cuda.get_device_capability()
 
-USE_FA3 = cap >= (8, 0)  # True on Ampere+, False on T4 (7.5)
-
-if USE_FA3:
-    repo = "varunneal/flash-attention-3" if cap == (9, 0) else "kernels-community/flash-attn3"
-    fa3 = get_kernel(repo).flash_attn_interface
-
-from prepare import MAX_SEQ_LEN, TIME_BUDGET, Tokenizer, make_dataloader, evaluate_bpb
+USE_FA3 = False  # disabled: flash-attn3 kernel not available for this torch/cuda combo
 
 # ---------------------------------------------------------------------------
 # GPT Model
@@ -97,13 +91,12 @@ class CausalSelfAttention(nn.Module):
             y = fa3.flash_attn_func(q, k, v, causal=True, window_size=window_size)
             y = y.contiguous().view(B, T, -1)
         else:
-            # SDPA vuole (B, n_head, T, head_dim)
             q_sdpa = q.transpose(1, 2)
             k_sdpa = k.transpose(1, 2)
             v_sdpa = v.transpose(1, 2)
             y = F.scaled_dot_product_attention(q_sdpa, k_sdpa, v_sdpa, is_causal=True)
             y = y.transpose(1, 2).contiguous().view(B, T, -1)
-            y = self.c_proj(y)
+        y = self.c_proj(y)  # fuori dall'if, sempre eseguito
         return y
 
 

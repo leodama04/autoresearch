@@ -90,7 +90,7 @@ def run_command(command: str) -> str:
     )
     return result.stdout + result.stderr
 
-def run_file(path: str) -> str:
+def run_file(path: str, **kwargs) -> str:
     path = os.path.expanduser(path)
     try:
         result = subprocess.run(
