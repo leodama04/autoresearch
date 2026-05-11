@@ -1,4 +1,0 @@
-docker: invalid reference format
-
-Run 'docker run --help' for more information
-/var/spool/slurmd/job11165269/slurm_script: line 8: -v: command not found

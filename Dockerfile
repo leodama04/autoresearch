@@ -1,4 +1,5 @@
 FROM nvidia/cuda:12.4.0-devel-ubuntu22.04
+
 LABEL maintainer="UniboNLP"
 
 ENV DEBIAN_FRONTEND=noninteractive
@@ -12,7 +13,8 @@ RUN apt-get update -y && apt-get install -y \
     python3.11-dev \
     python3-pip \
     build-essential \
-    zstd && \
+    zstd \
+    libcudnn9-cuda-12 && \
     apt-get autoremove -y && \
     apt-get clean -y && \
     rm -rf /var/lib/apt/lists/*
