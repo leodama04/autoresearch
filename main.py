@@ -112,27 +112,38 @@ import json
 # USE PROGRAM.MD AS SYSTEM_PROMPT FOR THE AGENT
 SYSTEM_PROMPT = open("/app/program.md").read()
 
+MAX_MESSAGES = 40  # tronca la storia per evitare context overflow
+
 def run_agent():
     messages = [
         {"role": "user", "content": "Read program.md and start the experiment setup."}
     ]
-
+    
     while True:
-        response = ollama.chat(
-            model="qwen3.5:2b",
-            messages=[{"role": "system", "content": SYSTEM_PROMPT}] + messages,
-            tools=tools,
-            think=False,
-            options={
-                "temperature": 1.0,
-                "top_p": 1.0,
-                "top_k": 20,
-                "min_p": 0.0,
-                "presence_penalty": 2.0,
-                "repeat_penalty": 1.0,
-                "num_ctx": 8192,
-            }
-        )
+        try:
+            # Tronca la storia mantenendo sempre il primo messaggio
+            trimmed = messages[:1] + messages[-MAX_MESSAGES:] if len(messages) > MAX_MESSAGES else messages
+            
+            response = ollama.chat(
+                model="qwen3.5:2b",
+                messages=[{"role": "system", "content": SYSTEM_PROMPT}] + trimmed,
+                tools=tools,
+                think=False,
+                options={
+                    "temperature": 1.0,
+                    "top_p": 1.0,
+                    "top_k": 20,
+                    "min_p": 0.0,
+                    "presence_penalty": 2.0,
+                    "repeat_penalty": 1.0,
+                    "num_ctx": 8192,
+                }
+            )
+        except Exception as e:
+            print(f"\n[ERROR] Ollama crash: {e}")
+            # Rimuovi gli ultimi messaggi che hanno causato il crash e riprova
+            messages = messages[:-2] if len(messages) > 2 else messages
+            continue
 
         message = response["message"]
         messages.append(message)
@@ -149,15 +160,24 @@ def run_agent():
             name = tool_call["function"]["name"]
             args = tool_call["function"]["arguments"]
             if isinstance(args, str):
-                args = json.loads(args)
+                try:
+                    args = json.loads(args)
+                except json.JSONDecodeError:
+                    print(f"\n[ERROR] Invalid JSON args: {args}")
+                    continue
 
             print(f"\n[TOOL] {name}({args})")
-            result = available_tools[name](**args)
-            print(f"[RESULT] {result[:2000]}")
-
+            
+            try:
+                result = available_tools[name](**args)
+            except Exception as e:
+                result = f"Error executing tool {name}: {e}"
+            
+            result_truncated = result[:3000]  # tronca per evitare XML crash di Ollama
+            print(f"[RESULT] {result_truncated}")
             messages.append({
                 "role": "tool",
-                "content": result,
+                "content": result_truncated,
             })
 
 run_agent()

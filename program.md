@@ -129,3 +129,8 @@ Always use absolute paths starting with /app/ or relative paths.
 WRONG: run_file(path="x.py", command="...")
 WRONG: run_file(path="x.py", content="...")
 RIGHT: write_file(path="x.py", content="...") then run_command(command="uv run x.py")
+
+## CRITICAL: Never overwrite train.py completely
+- NEVER use `write_file` to replace the entire contents of `train.py`
+- Only make targeted edits using `run_command` with `sed` or by writing a patch script
+- `train.py` is a complex file — rewriting it from scratch will always produce broken code
